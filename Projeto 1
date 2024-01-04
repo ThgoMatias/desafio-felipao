@@ -1,0 +1,77 @@
+#IMPORTANDO BIBLITOTECAS
+import pandas as pd
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.edge.service import Service
+from selenium.webdriver.common.by import By
+import time
+
+#Input de informações
+periodo = input("Digite o Periodo:  ex: aaaa/MM")
+
+#ABRINDO O SITE
+service= Service()
+options = webdriver.EdgeOptions()
+driver = webdriver.Edge(service=service, options=options)
+url = "http://www.sped.fazenda.gov.br/spedfiscalserver/ConsultaContribuinte/"
+driver.get(url)
+planilha = pd.read_excel(r"C:\Users\A0076286\OneDrive - Telefonica\Desktop\Atividades Compliance\Automações Python\SiteSped\CNPJRAIZPYMES.xlsx")
+
+#LOGANDO NO SITE DA SEFAZ
+driver.find_element(By.XPATH,"/html/body/form/article/div/div/div/div[1]/div[2]/div[2]/div[1]/div/input").send_keys("02558157")
+time.sleep(2)
+driver.find_element(By.XPATH,"/html/body/form/article/div/div/div/div[1]/div[2]/div[3]/div[2]/button").click()
+time.sleep(2)
+
+#PEGANDO AS INFORMAÇÕES DO SITE e CRIANDO A PRIMEIRA LISTA
+cnpjSite = driver.find_elements(By.TAG_NAME, 'td')[0:4000:7]
+cnpjlist = [CNPJ.text for CNPJ in cnpjSite]
+ieSite = driver.find_elements(By.TAG_NAME, 'td')[1:4000:7]
+ielist = [ie.text for ie in ieSite]
+ufSite = driver.find_elements(By.TAG_NAME, 'td')[2:4000:7]
+uflist = [uf.text for uf in ufSite]
+inicioSite = driver.find_elements(By.TAG_NAME, 'td')[4:4000:7]
+iniciolist = [inicio.text for inicio in inicioSite]
+fimSite = driver.find_elements(By.TAG_NAME, 'td')[5:4000:7]
+fimlist = [fim.text for fim in fimSite]
+time.sleep(5)
+
+# LAÇO DE REPETIÇÃO PARA PEGAR INFORMAÇÕES DE OUTRAS EMPRESAS
+for i, nota in enumerate(planilha['EMPRESA']):
+    raiz = format(planilha.loc[i, "RAIZ"],'08')    
+    driver.refresh()
+    driver.find_element(By.XPATH,"/html/body/form/article/div/div/div/div[1]/div[2]/div[2]/div[1]/div/input").send_keys(raiz)
+    time.sleep(2)
+    driver.find_element(By.XPATH,"/html/body/form/article/div/div/div/div[1]/div[2]/div[3]/div[2]/button").click()
+    time.sleep(2)
+    
+    cnpjSite = driver.find_elements(By.TAG_NAME, 'td')[0:4000:7]
+    listasupCNPJ= [CNPJ.text for CNPJ in cnpjSite]
+    cnpjlist = cnpjlist + listasupCNPJ
+    
+    ieSite = driver.find_elements(By.TAG_NAME, 'td')[1:4000:7]
+    listasupie = [ie.text for ie in ieSite]
+    ielist = ielist + listasupie
+    
+    ufSite = driver.find_elements(By.TAG_NAME, 'td')[2:4000:7]
+    listasupUF = [uf.text for uf in ufSite]
+    uflist = uflist + listasupUF
+    
+    inicioSite = driver.find_elements(By.TAG_NAME, 'td')[4:4000:7]
+    listasupin = [inicio.text for inicio in inicioSite]
+    iniciolist = iniciolist + listasupin
+    
+    fimSite = driver.find_elements(By.TAG_NAME, 'td')[5:4000:7]
+    listasupfim = [fim.text for fim in fimSite]
+    fimlist = fimlist + listasupfim
+    time.sleep(5)
+    
+    #EXPORTANDO AS INFORMAÇÕES
+ListaDF = {'CNPJ': cnpjlist,
+           'IE': ielist,
+           'UF': uflist,
+           'DT INICIO': iniciolist,
+           'DT FIM': fimlist}
+Listagem = pd.DataFrame(ListaDF)
+Listagem.to_csv(periodo + '-Informações_Filiais.csv',sep = '|')
