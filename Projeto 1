@@ -16,10 +16,10 @@ options = webdriver.EdgeOptions()
 driver = webdriver.Edge(service=service, options=options)
 url = "http://www.sped.fazenda.gov.br/spedfiscalserver/ConsultaContribuinte/"
 driver.get(url)
-planilha = pd.read_excel(r"C:\Users\A0076286\OneDrive - Telefonica\Desktop\Atividades Compliance\Automações Python\SiteSped\CNPJRAIZPYMES.xlsx")
+planilha = pd.read_excel(r"C:\Users\A0076286\OneDrive - Telefonica\Desktop\Atividades Compliance\Automações Python\SiteSped\Planilha.xlsx")
 
 #LOGANDO NO SITE DA SEFAZ
-driver.find_element(By.XPATH,"/html/body/form/article/div/div/div/div[1]/div[2]/div[2]/div[1]/div/input").send_keys("02558157")
+driver.find_element(By.XPATH,"/html/body/form/article/div/div/div/div[1]/div[2]/div[2]/div[1]/div/input").send_keys("111111")
 time.sleep(2)
 driver.find_element(By.XPATH,"/html/body/form/article/div/div/div/div[1]/div[2]/div[3]/div[2]/button").click()
 time.sleep(2)
